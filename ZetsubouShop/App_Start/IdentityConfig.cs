@@ -1,31 +1,37 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
+using Microsoft.Owin.Security.DataProtection;
 using ZetsubouShop.Models;
 
 namespace ZetsubouShop
 {
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
-
-    public class ApplicationUserManager : UserManager<ApplicationUser>
+    public class UsersStore : UserStore<ApplicationUser, Role, Guid, UserLogin, UserRole, UserClaim>
     {
-        public ApplicationUserManager(IUserStore<ApplicationUser> store)
+        public UsersStore(ApplicationDbContext context) : base(context) { }
+    }
+    public class ApplicationUserManager : UserManager<ApplicationUser, Guid>
+    {
+        private readonly ApplicationDbContext _db;
+        public ApplicationUserManager(UsersStore store)
             : base(store)
         {
         }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
-            var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
-            // Configure validation logic for usernames
-            manager.UserValidator = new UserValidator<ApplicationUser>(manager)
+            var manager = new ApplicationUserManager(new UsersStore(context.Get<ApplicationDbContext>()));
+            // Настройка логики проверки имен пользователей
+            manager.UserValidator = new UserValidator<ApplicationUser,Guid>(manager)
             {
                 AllowOnlyAlphanumericUserNames = false,
                 RequireUniqueEmail = true
             };
-            // Configure validation logic for passwords
+            // Настройка логики проверки паролей
             manager.PasswordValidator = new PasswordValidator
             {
                 RequiredLength = 6,
@@ -37,9 +43,10 @@ namespace ZetsubouShop
             var dataProtectionProvider = options.DataProtectionProvider;
             if (dataProtectionProvider != null)
             {
-                manager.UserTokenProvider = new DataProtectorTokenProvider<ApplicationUser>(dataProtectionProvider.Create("ASP.NET Identity"));
+                manager.UserTokenProvider = new DataProtectorTokenProvider<ApplicationUser,Guid>(dataProtectionProvider.Create("ASP.NET Identity"));
             }
             return manager;
         }
+
     }
 }

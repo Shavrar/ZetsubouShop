@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZetsubouShop", "ZetsubouShop\ZetsubouShop.csproj", "{AAC1C18C-42AC-42FB-8D9E-0ED2C4FDE889}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZetsubouShopApi", "ZetsubouShop\ZetsubouShopApi.csproj", "{AAC1C18C-42AC-42FB-8D9E-0ED2C4FDE889}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
