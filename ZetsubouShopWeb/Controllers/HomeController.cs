@@ -12,7 +12,7 @@ namespace ZetsubouShopWeb.Controllers
     {
         HttpClient client;
         string url = "http://localhost:3077/api/";
-        HomeController()
+        public HomeController()
         {
             client = new HttpClient();
             client.BaseAddress = new Uri(url);
@@ -25,17 +25,8 @@ namespace ZetsubouShopWeb.Controllers
             return View();
         }
 
-        public ActionResult About()
+        public ActionResult Register()
         {
-            ViewBag.Message = "Your application description page.";
-           
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
             return View();
         }
     }
