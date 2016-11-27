@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.Ajax.Utilities;
 using Newtonsoft.Json;
 using ZetsubouShopWeb.ViewModels;
 
@@ -32,10 +33,18 @@ namespace ZetsubouShopWeb.Controllers
         {
             return View();
         }
-
-        public ActionResult Test()
+        [HttpPost]
+        public async Task<ActionResult> Register(RegisterViewModel model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                HttpResponseMessage responseMessage = await client.PostAsJsonAsync(url+"/api/Account/Register",model);
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Login");
+                }
+            }
+            return View(model);
         }
 
         public ActionResult Login()
@@ -63,15 +72,32 @@ namespace ZetsubouShopWeb.Controllers
                 {
                     var responseData = responseMessage.Content.ReadAsStringAsync().Result;
                     var tokenResponse = JsonConvert.DeserializeObject<TokenResponseModel>(responseData);
-                    Session.Add("token",tokenResponse);                    
+                    Session.Add("token",tokenResponse);
+                    //postData = new List< KeyValuePair < string, string>> ();
+                    //.setRequestHeader("Authorization", "Bearer " + token);
+                    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + tokenResponse.AccessToken);
+                    responseMessage = await client.GetAsync(url + "api/Account/UserData");
+                    var data = JsonConvert.DeserializeObject<SessionStorage>(responseMessage.Content.ReadAsStringAsync().Result);
+                    Session.Add("UserData", data);
+                    client.DefaultRequestHeaders.Remove("Authorization");
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    
+                    ModelState.AddModelError("","Wrong login or password");
                 }
             }
             return View(model);
+        }
+
+        public async Task<ActionResult> Logout()
+        {
+            //api/Account/Logout
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + ((TokenResponseModel)Session["token"]).AccessToken);
+            await client.PostAsync(url+ "api/Account/Logout",null);
+            Session.Remove("UserData");
+            Session.Remove("token");
+            return RedirectToAction("Index");
         }
     }
 }

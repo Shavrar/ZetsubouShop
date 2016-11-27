@@ -7,14 +7,14 @@ namespace ZetsubouShop.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<ZetsubouShop.Models.ApplicationDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<ApplicationDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(ZetsubouShop.Models.ApplicationDbContext context)
+        protected override void Seed(ApplicationDbContext context)
         {
             var adminRole = new Role { Id = Guid.NewGuid(), Name = Consts.AdministratorRole };
             UpdateRole(context, adminRole);
@@ -32,6 +32,7 @@ namespace ZetsubouShop.Migrations
                 SecurityStamp = "96d36c8e-87b6-481b-90eb-3c4d668e0e4d",
                 Roles = { new UserRole { UserId = adminId, RoleId = adminRole.Id } }
             });
+            context.SaveChanges();
         }
 
         private void UpdateRole(ApplicationDbContext context, Role role)

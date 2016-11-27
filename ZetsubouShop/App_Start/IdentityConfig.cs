@@ -16,7 +16,7 @@ namespace ZetsubouShop
     }
     public class ApplicationUserManager : UserManager<ApplicationUser, Guid>
     {
-        private readonly ApplicationDbContext _db;
+        
         public ApplicationUserManager(UsersStore store)
             : base(store)
         {

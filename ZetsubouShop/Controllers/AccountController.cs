@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Description;
 using System.Web.Http.ModelBinding;
+using System.Web.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
@@ -16,6 +20,7 @@ using Microsoft.Owin.Security.OAuth;
 using ZetsubouShop.Models;
 using ZetsubouShop.Providers;
 using ZetsubouShop.Results;
+
 
 namespace ZetsubouShop.Controllers
 {
@@ -50,7 +55,17 @@ namespace ZetsubouShop.Controllers
         }
 
         public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; private set; }
-
+        [ResponseType(typeof(SessionStorage))]
+        [HttpGet]
+        [Route("UserData")]
+        public SessionStorage GetUserData()
+        {
+            var temp = new SessionStorage();
+            temp.UserName = User.Identity.GetUserName();
+            var id = Guid.Parse(User.Identity.GetUserId());
+            temp.Role = UserManager.GetRoles(id).FirstOrDefault();
+            return temp;
+        }
         // GET api/Account/UserInfo
         [HostAuthentication(DefaultAuthenticationTypes.ExternalBearer)]
         [Route("UserInfo")]
@@ -65,6 +80,7 @@ namespace ZetsubouShop.Controllers
                 LoginProvider = externalLogin != null ? externalLogin.LoginProvider : null
             };
         }
+       
 
         // POST api/Account/Logout
         [Route("Logout")]
@@ -328,8 +344,12 @@ namespace ZetsubouShop.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-            var user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
+            if (await UserManager.Users.AnyAsync(a => a.UserName == model.Email))
+            {
+                return BadRequest();
+            }
+            
+            var user = new ApplicationUser() { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName};
 
             IdentityResult result = await UserManager.CreateAsync(user, model.Password);
 
