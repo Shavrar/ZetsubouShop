@@ -5,20 +5,24 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using ZetsubouShop.Models;
 
 namespace ZetsubouShop.Controllers
 {
-    //[Authorize]
+    //[EnableCors(origins: "*", headers: "*", methods: "*")]
+    [Authorize]
     public class ItemsController : ApiController
     {
         private readonly ApplicationDbContext _db = new ApplicationDbContext();
+        [AllowAnonymous]
         // GET api/values
         public IEnumerable<Item> Get()
         {
+            
             return _db.Items;
         }
-
+        [AllowAnonymous]
         // GET api/values/5
         public Item Get(Guid id)
         {

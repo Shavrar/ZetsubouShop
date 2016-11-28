@@ -357,6 +357,44 @@ namespace ZetsubouShop.Controllers
             {
                 return GetErrorResult(result);
             }
+            else
+            {
+                var id = (await UserManager.Users.FirstOrDefaultAsync(a => a.UserName == model.Email)).Id;
+                await UserManager.AddToRoleAsync(id, Consts.CustomerRole);
+            }
+
+            return Ok();
+        }
+        
+        [Route("RegisterAdmin")]
+        public async Task<IHttpActionResult> RegisterAdmin(RegisterBindingModel model)
+        {
+            if (!User.IsInRole(Consts.AdministratorRole))
+            {
+                return BadRequest();
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (await UserManager.Users.AnyAsync(a => a.UserName == model.Email))
+            {
+                return BadRequest();
+            }
+
+            var user = new ApplicationUser() { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
+
+            IdentityResult result = await UserManager.CreateAsync(user, model.Password);
+
+            if (!result.Succeeded)
+            {
+                return GetErrorResult(result);
+            }
+            else
+            {
+                var id = (await UserManager.Users.FirstOrDefaultAsync(a => a.UserName == model.Email)).Id;
+                await UserManager.AddToRoleAsync(id, Consts.AdministratorRole);
+            }
 
             return Ok();
         }

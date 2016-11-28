@@ -24,9 +24,9 @@ namespace ZetsubouShopWeb.Controllers
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View();
+           return View();
         }
 
         public ActionResult Register()

@@ -1,1 +1,145 @@
-﻿
+﻿@using ZetsubouShopWeb.ViewModels
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div class="col-md-2">
+        <h2>Items:</h2>
+        <div class="form-group">
+            <label class="control-label">Name</label>
+            <div>
+                <input class="form-control" type="text" name="Name" />
+                <span class="text-danger" name="Name"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Description</label>
+            <div>
+                <input class="form-control" type="text" name="Description" />
+                <span class="text-danger" name="Description"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Price</label>
+            <div>
+                <input class="form-control" type="text" name="Price" />
+                <span class="text-danger" name="Price"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class=" control-label">Type</label>
+            <div>
+                @Html.DropDownList("Type", EnumHelper.GetSelectList(typeof(ItemType)), new { @class = "form-control" })
+                <span class="text-danger" name="Type"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <button id="btnSearch" class="btn btn-default">Search</button>
+            <button id="btnClear" class="btn btn-default">Clear</button>
+        </div>
+    </div>
+    <div class="col-md-10">
+        @if (Session["UserData"]!=null && ((SessionStorage)Session["UserData"]).Role == "Administrator")
+        {<h2>
+        <a href="http://localhost:5394/item/create" class="btn btn-primary">
+            <span class="glyphicon glyphicon-plus"></span> Create New
+        </a>
+        
+    </h2>
+        }
+
+        <table class="table">
+            <tr>
+                @if (Session["UserData"] != null && ((SessionStorage)Session["UserData"]).Role == "Administrator")
+                {
+                    <th></th>
+                }
+                <th>Name</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Price</th>
+                @if (Session["UserData"] != null && ((SessionStorage)Session["UserData"]).Role == "Administrator")
+                {
+                    <th></th>
+                }
+                <th></th>
+            </tr>
+            <tbody data-bind="foreach: items">
+                <tr>
+                    @if (Session["UserData"] != null && ((SessionStorage)Session["UserData"]).Role == "Administrator")
+                    {
+                        <td><input type="checkbox" data-bind="value: Id" /></td>
+                    }
+                    <td data-bind="text: Name"></td>
+                    <td data-bind="text: Description"></td>
+                    <td data-bind="text: GetType(Type)"></td>
+                    <td data-bind="text: Price"></td>
+                    @if (Session["UserData"] != null && ((SessionStorage)Session["UserData"]).Role == "Administrator")
+                    {
+                        <td>
+                            <a data-bind="attr: { href: 'http://localhost:5394/item/edit/?Id=' + Id }" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                        </td>
+                        <td>
+                            <a data-bind="attr: { href: 'http://localhost:5394/item/remove/?Id=' + Id }" class="btn btn-danger" id="btnRemove">
+                                <span class="glyphicon glyphicon-remove"></span> Remove
+                            </a>
+                        </td>
+                    }
+</tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/knockout")
+
+    <script>
+        var viewModel;
+        @{
+            var en = EnumHelper.GetSelectList(typeof (ItemType));
+            var types = new Dictionary<string, string>();
+            foreach (var element in en)
+            {
+                types.Add(element.Value,element.Text);
+            }
+
+        }
+        var types = @Html.Raw(Json.Encode(@types));
+        $().ready(function() {
+            GetItems();
+        });
+
+        function GetType(id) {
+            return types[id];
+        }
+
+        function ItemsViewModel(items) {
+            var self = this;
+            self.items = ko.observableArray(items);
+        }
+
+        function GetItems() {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:3077/api/Items",
+                success: function (items) {
+                    console.log(items);
+                    if (viewModel == null) {
+                        viewModel = new ItemsViewModel(items);
+                        ko.applyBindings(viewModel);
+                    } else {
+                        viewModel.items.removeAll();
+                        ko.utils.arrayPushAll(viewModel.items, items);
+                    }
+                },
+                async:true
+            });
+        }
+    </script>
+
+
+}

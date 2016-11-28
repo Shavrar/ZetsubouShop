@@ -32,6 +32,7 @@ namespace ZetsubouShop.Migrations
                 SecurityStamp = "96d36c8e-87b6-481b-90eb-3c4d668e0e4d",
                 Roles = { new UserRole { UserId = adminId, RoleId = adminRole.Id } }
             });
+            context.Items.AddOrUpdate(new Item {Count = 13, Description = "test", Id = Guid.NewGuid(), Name = "test", Price = 322, Type = ItemType.Meat});
             context.SaveChanges();
         }
 
