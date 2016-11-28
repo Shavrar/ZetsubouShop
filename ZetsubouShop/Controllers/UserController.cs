@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using ZetsubouShop.Models;
@@ -12,7 +13,6 @@ using ZetsubouShop.Models;
 namespace ZetsubouShop.Controllers
 {
     [Authorize]
-    [RoutePrefix("api/User")]
     public class UserController : ApiController
     {
         private const string LocalLoginProvider = "Local";
@@ -43,7 +43,6 @@ namespace ZetsubouShop.Controllers
 
         public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; private set; }
 
-        
         public IEnumerable<UserViewModel> Get()
         {
             if (!User.IsInRole(Consts.AdministratorRole))

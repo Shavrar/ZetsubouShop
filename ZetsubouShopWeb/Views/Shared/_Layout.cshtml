@@ -29,6 +29,10 @@
                     }
                     else
                     {
+                        if (((SessionStorage)Session["UserData"]).Role == "Administrator")
+                        {
+                            <li>@Html.ActionLink("Users", "Index", "User")</li>
+                        }
                         <li><a>Hello @(((SessionStorage) Session["UserData"]).UserName)</a></li>
                         <li>@Html.ActionLink("Logout", "Logout", "Home")</li>
                     }

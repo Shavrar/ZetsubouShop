@@ -5,6 +5,12 @@ using Newtonsoft.Json;
 
 namespace ZetsubouShopWeb.ViewModels
 {
+    public enum UserType
+    {
+        None = 0,
+        Customer = 100,
+        Administrator = 200
+    }
     public class ExternalLoginConfirmationViewModel
     {
         [Required]
