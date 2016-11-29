@@ -5,7 +5,7 @@
 
 <div class="row">
     <div class="col-md-2">
-        <h2>Items:</h2>
+        <h2>Users:</h2>
         <div class="form-group">
             <label class="control-label">UserName</label>
             <div>
@@ -57,15 +57,16 @@
 
         <table class="table">
             <tr>
+                <th></th>
                 <th>UserName</th>
                 <th>FirstName</th>
                 <th>LastName</th>
                 <th>Email</th>
-                <th>Type</th>              
+                <th>Type</th>
                 <th></th>
                 <th></th>
             </tr>
-            <tbody data-bind="foreach: items">
+            <tbody data-bind="foreach: users">
                 <tr>
 
                     <td><input type="checkbox" data-bind="value: Id" /></td>
@@ -128,6 +129,7 @@
                     xhr.setRequestHeader("Authorization", "Bearer " + token);
                 },
                 success: function (users) {
+                    console.log(users);
                     if (viewModel == null) {
                         viewModel = new UsersViewModel(users);
                         ko.applyBindings(viewModel);
