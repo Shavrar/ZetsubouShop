@@ -86,6 +86,14 @@
                             </a>
                         </td>
                     }
+                    else if (Session["UserData"] != null && ((SessionStorage)Session["UserData"]).Role == "Customer")
+                    {
+                        <td>
+                            <a data-bind="attr: { href: 'http://localhost:5394/shop/add/?Id=' + Id }" class="btn btn-info" id="btnAdd">
+                                <span class="glyphicon glyphicon-plus"></span> Add to basket
+                            </a>
+                        </td>
+                    }
 </tr>
             </tbody>
         </table>

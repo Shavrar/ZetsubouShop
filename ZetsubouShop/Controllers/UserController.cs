@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using ZetsubouShop.Models;
@@ -88,43 +90,73 @@ namespace ZetsubouShop.Controllers
             return user;
         }
 
-        public void Post([FromBody]UserViewModel model)
+        public async Task<HttpResponseMessage> Post([FromBody]UserViewModel model)
         {
-            model.Id = Guid.NewGuid();
             var user = new ApplicationUser
             {
-                Id = model.Id,
                 Email = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                UserName = model.UserName
+                UserName = model.UserName,
+                Id = Guid.NewGuid(),
             };
-            _userManager.CreateAsync(user, model.Password ?? "12345").RunSynchronously();
+            var result = await UserManager.CreateAsync(user, !string.IsNullOrEmpty(model.Password) ? model.Password : "!Aa12345");
+            if (!result.Succeeded)
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            }
             if (model.Type == UserType.Administrator)
             {
-                _userManager.AddToRoleAsync(model.Id, Consts.AdministratorRole).RunSynchronously();
+                await UserManager.AddToRoleAsync(user.Id, Consts.AdministratorRole);
             }
             else
             {
-                _userManager.AddToRoleAsync(model.Id, Consts.CustomerRole).RunSynchronously();
+                await UserManager.AddToRoleAsync(user.Id, Consts.CustomerRole);
             }
+            return new HttpResponseMessage(HttpStatusCode.Created);
         }
 
         // PUT api/values/5
-        public void Put(Guid id, [FromBody]Item item)
+        public HttpResponseMessage Put(Guid id, [FromBody]UserViewModel model)
         {
-            if (id == item.Id)
+            var user = UserManager.FindById(id);
+            if (id == model.Id)
             {
-                _db.Entry(item).State = EntityState.Modified;
-
-                _db.SaveChanges();
+                user.UserName = model.UserName;
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.Email = model.Email;
+                UserManager.Update(user);
+                if(!string.IsNullOrEmpty(model.Password))
+                {
+                    UserManager.RemovePassword(id);
+                    UserManager.AddPassword(id,model.Password);
+                }
+                var role = UserManager.GetRoles(id).FirstOrDefault();
+                if (model.Type == UserType.Administrator && role == Consts.CustomerRole)
+                {
+                    UserManager.RemoveFromRole(id, Consts.CustomerRole);
+                    UserManager.AddToRole(id, Consts.AdministratorRole);
+                }
+                else if(model.Type == UserType.Customer && role == Consts.AdministratorRole)
+                {
+                    UserManager.RemoveFromRole(id, Consts.AdministratorRole);
+                    UserManager.AddToRole(id, Consts.CustomerRole);
+                }
             }
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
 
         // DELETE api/values/5
-        public void Delete(Guid id)
+        public HttpResponseMessage Delete(Guid id)
         {
-           _userManager.re
+            var user = UserManager.FindById(id);
+            var result = UserManager.Delete(user);
+            if (result.Succeeded)
+            {
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
 
 

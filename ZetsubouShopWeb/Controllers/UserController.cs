@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using Newtonsoft.Json;
 using ZetsubouShopWeb.ViewModels;
@@ -50,7 +51,7 @@ namespace ZetsubouShopWeb.Controllers
             return View(model);
         }
         [HttpPost]
-        public ActionResult Edit(UserViewModel model)
+        public async Task<ActionResult> Edit(UserViewModel model)
         {
             if (Session["token"] == null || ((SessionStorage)Session["UserData"]).Role != "Administrator")
             {
@@ -62,11 +63,11 @@ namespace ZetsubouShopWeb.Controllers
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + ((TokenResponseModel)Session["token"]).AccessToken);
                 if (model.Id != Guid.Empty)
                 {
-                    response = client.PutAsJsonAsync(url + "api/User/" + model.Id.ToString(), model).Result;
+                    response = await client.PutAsJsonAsync(url + "api/User/" + model.Id.ToString(), model);
                 }
                 else
                 {
-                    response = client.PostAsJsonAsync(url + "api/User", model).Result;
+                    response = await client.PostAsJsonAsync(url + "api/User", model);
                 }
                 client.DefaultRequestHeaders.Remove("Authorization");
                 if (response.IsSuccessStatusCode)

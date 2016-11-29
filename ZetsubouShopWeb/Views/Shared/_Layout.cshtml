@@ -33,6 +33,10 @@
                         {
                             <li>@Html.ActionLink("Users", "Index", "User")</li>
                         }
+                        else if (((SessionStorage)Session["UserData"]).Role == "Customer")
+                        {
+                            <li>@Html.ActionLink("Basket", "Index", "Shop")</li>
+                        }
                         <li><a>Hello @(((SessionStorage) Session["UserData"]).UserName)</a></li>
                         <li>@Html.ActionLink("Logout", "Logout", "Home")</li>
                     }
