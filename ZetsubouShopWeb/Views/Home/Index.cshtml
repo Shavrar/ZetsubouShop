@@ -9,21 +9,21 @@
         <div class="form-group">
             <label class="control-label">Name</label>
             <div>
-                <input class="form-control" type="text" name="Name" />
+                <input class="form-control" type="text" id="Name" />
                 <span class="text-danger" name="Name"></span>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label">Description</label>
             <div>
-                <input class="form-control" type="text" name="Description" />
+                <input class="form-control" type="text" id="Description" />
                 <span class="text-danger" name="Description"></span>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label">Price</label>
             <div>
-                <input class="form-control" type="text" name="Price" />
+                <input class="form-control" type="number" id="Price" />
                 <span class="text-danger" name="Price"></span>
             </div>
         </div>
@@ -35,8 +35,8 @@
             </div>
         </div>
         <div class="form-group">
-            <button id="btnSearch" class="btn btn-default">Search</button>
-            <button id="btnClear" class="btn btn-default">Clear</button>
+            <button id="btnSearch" class="btn btn-default" onclick="GetItems()">Search</button>
+            <button id="btnClear" class="btn btn-default" onclick="Clear()">Clear</button>
         </div>
     </div>
     <div class="col-md-10">
@@ -89,9 +89,9 @@
                     else if (Session["UserData"] != null && ((SessionStorage)Session["UserData"]).Role == "Customer")
                     {
                         <td>
-                            <a data-bind="attr: { href: 'http://localhost:5394/shop/add/?Id=' + Id }" class="btn btn-info" id="btnAdd">
+                            <button data-bind="click: $parent.AddToBasket" class="btn btn-info" id="btnAdd">
                                 <span class="glyphicon glyphicon-plus"></span> Add to basket
-                            </a>
+                            </button>
                         </td>
                     }
 </tr>
@@ -107,6 +107,7 @@
 
     <script>
         var viewModel;
+        var token = '@(Session["token"]!=null ? ((TokenResponseModel)Session["token"]).AccessToken : null)';
         @{
             var en = EnumHelper.GetSelectList(typeof (ItemType));
             var types = new Dictionary<string, string>();
@@ -124,15 +125,45 @@
         function GetType(id) {
             return types[id];
         }
-
+        function getParams() {
+            var params = {};
+            params["Name"] = $("#Name").val();
+            params["Description"] = $("#Description").val();
+            params["Price"] = $("#Price").val();
+            params["Type"] = $("#Type").val();
+            return params;
+        }
+        function Clear() {
+            $("#Name").val("");
+            $("#Decription").val("");
+            $("#Price").val("");
+            $("#Type").val(0);
+        }
         function ItemsViewModel(items) {
             var self = this;
             self.items = ko.observableArray(items);
+            self.AddToBasket = function(item) {
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:3077/api/Shop/"+item.Id,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Bearer " + token);
+                    },
+                    success: function () {
+                        alert("Success");
+                    },
+                    error:function () {
+                        alert("Failed");
+                    },
+                    async:true
+                });
+            }
         }
 
         function GetItems() {
             $.ajax({
                 type: "GET",
+                data: getParams(),
                 url: "http://localhost:3077/api/Items",
                 success: function (items) {
                     console.log(items);

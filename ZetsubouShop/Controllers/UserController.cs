@@ -46,7 +46,7 @@ namespace ZetsubouShop.Controllers
 
         public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; private set; }
 
-        public IEnumerable<UserViewModel> Get()
+        /*public IEnumerable<UserViewModel> Get()
         {
             if (!User.IsInRole(Consts.AdministratorRole))
             {
@@ -67,6 +67,57 @@ namespace ZetsubouShop.Controllers
                     ? UserType.Administrator
                     : UserType.Customer;
             }
+            return users;
+        }*/
+
+        public IEnumerable<UserViewModel> Get([FromUri]UserFilter filter)
+        {
+            if (!User.IsInRole(Consts.AdministratorRole))
+            {
+                return null;
+            }
+
+            var query = UserManager.Users.Include(a => a.Roles);
+            if (!string.IsNullOrEmpty(filter.UserName))
+            {
+                query = query.Where(a => a.UserName.Contains(filter.UserName));
+            }
+            if (!string.IsNullOrEmpty(filter.FirstName))
+            {
+                query = query.Where(a => a.FirstName.Contains(filter.FirstName));
+            }
+            if (!string.IsNullOrEmpty(filter.LastName))
+            {
+                query = query.Where(a => a.LastName.Contains(filter.LastName));
+            }
+            if (!string.IsNullOrEmpty(filter.Email))
+            {
+                query = query.Where(a => a.Email.Contains(filter.Email));
+            }
+            
+            var users = query.Select(a => new UserViewModel
+            {
+                Email = a.Email,
+                FirstName = a.FirstName,
+                Id = a.Id,
+                LastName = a.LastName,
+                UserName = a.UserName
+            }).ToList();
+            foreach (var user in users)
+            {
+                user.Type = UserManager.GetRolesAsync(user.Id).Result.FirstOrDefault() == Consts.AdministratorRole
+                    ? UserType.Administrator
+                    : UserType.Customer;
+            }
+            if (filter.Type == UserType.Administrator)
+            {
+                users = users.Where(a => a.Type == UserType.Administrator).ToList();
+            }
+            else if (filter.Type == UserType.Customer)
+            {
+                users = users.Where(a => a.Type == UserType.Customer).ToList();
+            }
+
             return users;
         }
 

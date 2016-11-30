@@ -32,6 +32,7 @@ namespace ZetsubouShopWeb.ViewModels
 
     public enum ItemType
     {
+        None = 0,
         Vegetables = 100,
         Baking = 200,
         Drinks = 300,

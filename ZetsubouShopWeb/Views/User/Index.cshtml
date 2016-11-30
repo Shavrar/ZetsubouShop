@@ -9,28 +9,28 @@
         <div class="form-group">
             <label class="control-label">UserName</label>
             <div>
-                <input class="form-control" type="text" name="UserName" />
+                <input class="form-control" type="text" id="UserName" />
                 <span class="text-danger" name="UserName"></span>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label">FirstName</label>
             <div>
-                <input class="form-control" type="text" name="FirstName" />
+                <input class="form-control" type="text" id="FirstName" />
                 <span class="text-danger" name="FirstName"></span>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label">LastName</label>
             <div>
-                <input class="form-control" type="text" name="LastName"/>
+                <input class="form-control" type="text" id="LastName"/>
                 <span class="text-danger" name="LastName"></span>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label">Email</label>
             <div>
-                <input class="form-control" type="text" name="Email" />
+                <input class="form-control" type="text" id="Email" />
                 <span class="text-danger" name="Email"></span>
             </div>
         </div>
@@ -42,8 +42,8 @@
             </div>
         </div>
         <div class="form-group">
-            <button id="btnSearch" class="btn btn-default">Search</button>
-            <button id="btnClear" class="btn btn-default">Clear</button>
+            <button id="btnSearch" class="btn btn-default" onclick="GetUsers()">Search</button>
+            <button id="btnClear" class="btn btn-default" onclick="Clear()">Clear</button>
         </div>
     </div>
     <div class="col-md-10">
@@ -97,7 +97,7 @@
 
     <script>
         var viewModel;
-        var token = '@(((TokenResponseModel)Session["token"]).AccessToken)';
+        var token =  '@(Session["token"]!=null ? ((TokenResponseModel)Session["token"]).AccessToken : null)';
         @{
             var en = EnumHelper.GetSelectList(typeof (UserType));
             var types = new Dictionary<string, string>();
@@ -118,18 +118,33 @@
 
         function UsersViewModel(users) {
             var self = this;
-            self.users = ko.observableArray(users);
+            self.users = ko.observableArray(users);            
         }
-
+        function getParams() {
+            var params = {};
+            params["FirstName"] = $("#FirstName").val();
+            params["LastName"] = $("#LastName").val();
+            params["Email"] = $("#Email").val();
+            params["UserName"] = $("#UserName").val();
+            params["Type"] = $("#Type").val();
+            return params;
+        }
+        function Clear() {
+            $("#FirstName").val("");
+            $("#LastName").val("");
+            $("#Email").val("");
+            $("#UserName").val("");
+            $("#Type").val(0);
+        }
         function GetUsers() {
             $.ajax({
-               
+
                 url: "http://localhost:3077/api/User",
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader("Authorization", "Bearer " + token);
                 },
+                data:getParams(),
                 success: function (users) {
-                    console.log(users);
                     if (viewModel == null) {
                         viewModel = new UsersViewModel(users);
                         ko.applyBindings(viewModel);

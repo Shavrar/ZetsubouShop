@@ -17,10 +17,26 @@ namespace ZetsubouShop.Controllers
         private readonly ApplicationDbContext _db = new ApplicationDbContext();
         [AllowAnonymous]
         // GET api/values
-        public IEnumerable<Item> Get()
+        public IEnumerable<Item> Get([FromUri]ItemFilter filter)
         {
-            
-            return _db.Items;
+            var query = _db.Items.ToList();
+            if (!string.IsNullOrEmpty(filter.Name))
+            {
+                query = query.Where(a => a.Name.Contains(filter.Name)).ToList();
+            }
+            if (!string.IsNullOrEmpty(filter.Description))
+            {
+                query = query.Where(a => a.Description.Contains(filter.Description)).ToList();
+            }
+            if (filter.Price > 0)
+            {
+                query = query.Where(a => a.Price < filter.Price).ToList();
+            }
+            if (filter.Type!= ItemType.None)
+            {
+                query = query.Where(a => a.Type == filter.Type).ToList();
+            }
+            return query;
         }
         [AllowAnonymous]
         // GET api/values/5

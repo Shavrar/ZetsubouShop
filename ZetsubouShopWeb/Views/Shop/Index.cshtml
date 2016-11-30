@@ -1,0 +1,125 @@
+﻿@using ZetsubouShopWeb.ViewModels
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div class="col-md-10 col-md-offset-2">
+        <table class="table">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th></th>
+            </tr>
+            <tbody data-bind="foreach: items">
+            <tr>
+                <td data-bind="text: Name"></td>
+                <td data-bind="text: Description"></td>
+                <td data-bind="text: GetType(Type)"></td>
+                <td data-bind="text: Price"></td>
+                <td data-bind="text: Amount"></td>
+                <td>
+                    <button data-bind="click: $parent.RemoveFromBasket" class="btn btn-danger" id="btnAdd">
+                        <span class="glyphicon glyphicon-ban-circle"></span> Remove from basket
+                    </button>
+                </td>
+
+            </tr>
+            </tbody>
+            <tr>
+                <th>Total Summ:</th>
+                <th data-bind="text: summ"></th>
+                <th>
+                    <button class="btn btn-success" id="btnAdd">
+                        <span class="glyphicon glyphicon-chevron-right"></span> Pay with your life
+                    </button>
+                </th>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/knockout")
+
+    <script>
+        var viewModel;
+        var token =  '@(Session["token"]!=null ? ((TokenResponseModel)Session["token"]).AccessToken : null)';
+        @{
+            var en = EnumHelper.GetSelectList(typeof (ItemType));
+            var types = new Dictionary<string, string>();
+            foreach (var element in en)
+            {
+                types.Add(element.Value,element.Text);
+            }
+
+        }
+        var types = @Html.Raw(Json.Encode(@types));
+        $().ready(function() {
+            GetItems();
+        });
+
+        function GetType(id) {
+            return types[id];
+        }
+
+        function ItemsViewModel(items) {
+            var self = this;
+            self.items = ko.observableArray(items);
+            self.summ = ko.computed(function() {
+                var sum = 0;
+                for(var i = 0; i < self.items().length;i++) {
+                    sum += self.items()[i].Amount * self.items()[i].Price;
+                }
+                return sum;
+            });
+            self.RemoveFromBasket = function(item) {
+                $.ajax({
+                    type: "DELETE",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Bearer " + token);
+                    },
+                    url: "http://localhost:3077/api/Shop/"+item.Id,
+                    success: function () {
+                        self.items.remove(item);
+                        alert("Success");
+
+                    },
+                    error:function () {
+                        alert("Failed");
+                    },
+                    async:true
+                });
+            }
+        }
+
+
+        function GetItems() {
+            $.ajax({
+                type: "GET",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + token);
+                },
+                url: "http://localhost:3077/api/Shop",
+                success: function (items) {
+                    console.log(items);
+                    if (viewModel == null) {
+                        viewModel = new ItemsViewModel(items);
+                        ko.applyBindings(viewModel);
+                    } else {
+                        viewModel.items.removeAll();
+                        ko.utils.arrayPushAll(viewModel.items, items);
+                    }
+                },
+                async:true
+            });
+        }
+    </script>
+
+
+}
