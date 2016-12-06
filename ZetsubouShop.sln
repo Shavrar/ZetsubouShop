@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZetsubouShopApi", "Zetsubou
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZetsubouShopWeb", "ZetsubouShopWeb\ZetsubouShopWeb.csproj", "{FB537684-BA7E-4BE0-BACF-A54EDCD9A34A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankWeb", "BankWeb\BankWeb.csproj", "{46847623-FDA3-4586-BD8F-95948B815EAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Both|Any CPU = Both|Any CPU
@@ -26,6 +28,12 @@ Global
 		{FB537684-BA7E-4BE0-BACF-A54EDCD9A34A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB537684-BA7E-4BE0-BACF-A54EDCD9A34A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB537684-BA7E-4BE0-BACF-A54EDCD9A34A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46847623-FDA3-4586-BD8F-95948B815EAD}.Both|Any CPU.ActiveCfg = Release|Any CPU
+		{46847623-FDA3-4586-BD8F-95948B815EAD}.Both|Any CPU.Build.0 = Release|Any CPU
+		{46847623-FDA3-4586-BD8F-95948B815EAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46847623-FDA3-4586-BD8F-95948B815EAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46847623-FDA3-4586-BD8F-95948B815EAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46847623-FDA3-4586-BD8F-95948B815EAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
