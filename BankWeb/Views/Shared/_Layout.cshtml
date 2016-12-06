@@ -17,14 +17,15 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Имя приложения", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("Zetsubou Bank", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("default page", "Index", "Home")</li>
-                    <li class="unauth">@Html.ActionLink("Register", "About", "Home")</li>
-                    <li class="unauth">@Html.ActionLink("Login", "Contact", "Home")</li>
-                    <li class="auth">@Html.ActionLink("Logout", "Contact", "Home")</li>
+                    <li class="auth admin">@Html.ActionLink("Users", "Index", "Account")</li>
+                    <li class="auth user">@Html.ActionLink("Invoices", "Index", "Invoice")</li>
+                    <li class="unauth">@Html.ActionLink("Register", "Register", "Account")</li>
+                    <li class="unauth">@Html.ActionLink("Login", "Login", "Account")</li>
+                    <li class="auth">@Html.ActionLink("Logout", "Logout", "Account")</li>
                 </ul>
             </div>
         </div>
@@ -47,6 +48,16 @@
             } else {
                 $(".unauth").hide();
                 $(".auth").show();
+                if (sessionStorage.getItem("Role") == "ROLE_ADMIN") {
+                    $(".admin").show();
+                    $(".user").hide();
+                } else if (sessionStorage.getItem("Role") == "ROLE_USER") {
+                    $(".admin").hide();
+                    $(".user").show();
+                } else {
+                    $(".admin").hide();
+                    $(".user").hide();
+                }
             }
         </script>
     

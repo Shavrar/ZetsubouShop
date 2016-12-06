@@ -14,12 +14,12 @@ namespace BankWeb.Controllers
             return View();
         }
 
-        public ActionResult Logout()
+        public ActionResult Register()
         {
             return View();
         }
 
-        public ActionResult Register()
+        public ActionResult Logout()
         {
             return View();
         }

@@ -24,7 +24,8 @@ namespace BankWeb
                       "~/Scripts/respond.js"));
             bundles.Add(new ScriptBundle("~/bundles/auth").Include(
                      "~/Scripts/auth.js"));
-
+            bundles.Add(new ScriptBundle("~/bundles/knockout").Include(
+         "~/Scripts/knockout.js"));
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));
