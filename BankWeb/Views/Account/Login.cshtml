@@ -1,1 +1,33 @@
-﻿
+﻿<div class="loginForm">
+    <h3>Вход на сайт</h3>
+    <label>Введите email</label><br />
+    <input type="email" id="emailLogin" /> <br /><br />
+    <label>Введите пароль</label><br />
+    <input type="password" id="passwordLogin" /><br /><br />
+    <input type="submit" id="submitLogin" value="Логин" />
+</div>
+@section scripts{
+    <script type="text/javascript">
+    $(function () {
+        //...........................
+        $('#submitLogin').click(function (e) {
+            e.preventDefault();
+            var token = btoa($('#emailLogin').val() + ':' + $('#passwordLogin').val());
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost:9095/account/???',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", token);
+                }
+            }).success(function (data) {
+                sessionStorage.setItem("Authorization", token);
+                sessionStorage.setItem("Role", data.role);
+                sessionStorage.setItem("UserName", data.UserName);
+                window.location.replace('http://localhost:60305/');
+            }).fail(function (data) {
+                alert('При логине возникла ошибка');
+            });
+        });
+    })
+    </script>
+}
