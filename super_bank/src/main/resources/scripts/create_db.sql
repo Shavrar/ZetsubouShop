@@ -1,0 +1,6 @@
+CREATE DATABASE eshop
+  CHARACTER SET utf8;
+CREATE USER 'eshopuser'
+  IDENTIFIED BY 'eshoppass';
+GRANT ALL PRIVILEGES ON eshop.* TO 'eshopuser';
+FLUSH PRIVILEGES;

@@ -15,25 +15,25 @@
                 <th></th>
             </tr>
             <tbody data-bind="foreach: items">
-            <tr>
-                <td data-bind="text: Name"></td>
-                <td data-bind="text: Description"></td>
-                <td data-bind="text: GetType(Type)"></td>
-                <td data-bind="text: Price"></td>
-                <td data-bind="text: Amount"></td>
-                <td>
-                    <button data-bind="click: $parent.RemoveFromBasket" class="btn btn-danger" id="btnAdd">
-                        <span class="glyphicon glyphicon-ban-circle"></span> Remove from basket
-                    </button>
-                </td>
+                <tr>
+                    <td data-bind="text: Name"></td>
+                    <td data-bind="text: Description"></td>
+                    <td data-bind="text: GetType(Type)"></td>
+                    <td data-bind="text: Price"></td>
+                    <td data-bind="text: Amount"></td>
+                    <td>
+                        <button data-bind="click: $parent.RemoveFromBasket" class="btn btn-danger" id="btnAdd">
+                            <span class="glyphicon glyphicon-ban-circle"></span> Remove from basket
+                        </button>
+                    </td>
 
-            </tr>
+                </tr>
             </tbody>
             <tr>
                 <th>Total Summ:</th>
                 <th data-bind="text: summ"></th>
                 <th>
-                    <button class="btn btn-success" id="btnAdd">
+                    <button class="btn btn-success" id="btnPay" data-toggle="modal" data-target="#myModal">
                         <span class="glyphicon glyphicon-chevron-right"></span> Pay with your life
                     </button>
                 </th>
@@ -41,21 +41,41 @@
         </table>
     </div>
 </div>
-
-
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <label id="message"></label><br/>
+                <label>Your card number:</label><input type="text" id="editSCN"/>
+                <br/>
+                <label>Your password for card: </label><input type="password" id="editPassword"/>
+                <br/>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="Pay()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @section scripts
 {
     @Scripts.Render("~/bundles/knockout")
 
     <script>
+
         var viewModel;
-        var token =  '@(Session["token"]!=null ? ((TokenResponseModel)Session["token"]).AccessToken : null)';
+        var token = '@(Session["token"] != null ? ((TokenResponseModel) Session["token"]).AccessToken : null)';
         @{
             var en = EnumHelper.GetSelectList(typeof (ItemType));
             var types = new Dictionary<string, string>();
             foreach (var element in en)
             {
-                types.Add(element.Value,element.Text);
+                types.Add(element.Value, element.Text);
             }
 
         }
@@ -73,7 +93,7 @@
             self.items = ko.observableArray(items);
             self.summ = ko.computed(function() {
                 var sum = 0;
-                for(var i = 0; i < self.items().length;i++) {
+                for (var i = 0; i < self.items().length; i++) {
                     sum += self.items()[i].Amount * self.items()[i].Price;
                 }
                 return sum;
@@ -81,20 +101,33 @@
             self.RemoveFromBasket = function(item) {
                 $.ajax({
                     type: "DELETE",
-                    beforeSend: function (xhr) {
+                    beforeSend: function(xhr) {
                         xhr.setRequestHeader("Authorization", "Bearer " + token);
                     },
-                    url: "http://localhost:3077/api/Shop/"+item.Id,
-                    success: function () {
+                    url: "http://localhost:3077/api/Shop/" + item.Id,
+                    success: function() {
                         self.items.remove(item);
                         alert("Success");
 
                     },
-                    error:function () {
+                    error: function() {
                         alert("Failed");
                     },
-                    async:true
+                    async: true
                 });
+            }
+            self.RemoveAll = function() {
+                for (var i = 0; i < self.items().length; i++) {
+                    $.ajax({
+                        type: "DELETE",
+                        beforeSend: function(xhr) {
+                            xhr.setRequestHeader("Authorization", "Bearer " + token);
+                        },
+                        url: "http://localhost:3077/api/Shop/" + self.items()[i].Id,
+                        async: true
+                    });
+                }
+                self.items([]);
             }
         }
 
@@ -102,11 +135,11 @@
         function GetItems() {
             $.ajax({
                 type: "GET",
-                beforeSend: function (xhr) {
+                beforeSend: function(xhr) {
                     xhr.setRequestHeader("Authorization", "Bearer " + token);
                 },
                 url: "http://localhost:3077/api/Shop",
-                success: function (items) {
+                success: function(items) {
                     console.log(items);
                     if (viewModel == null) {
                         viewModel = new ItemsViewModel(items);
@@ -116,10 +149,31 @@
                         ko.utils.arrayPushAll(viewModel.items, items);
                     }
                 },
-                async:true
+                async: true
             });
         }
-    </script>
 
-
+        function Pay() {
+            var transaction = {
+                "amount": viewModel.summ(),
+                "password": $("#editPassword").val(),
+                "reciverCardNumber": 0,
+                "senderCardNumber": $("#editSCN").val()
+            }
+           $.ajax({
+               type: "POST",
+               url: 'http://localhost:9095/api/transactions/shop',
+               data: JSON.stringify(transaction),
+               contentType: "application/json;charset=utf-8",
+               success: function(items) {
+                   viewModel.RemoveAll();
+                   $('#myModal').modal('hide');
+               },
+               error:function() {
+                   $("#message").text("PAYMENT HAS FAILED");
+               },
+               async: true
+           });
+       }
+        </script>
 }

@@ -26,6 +26,7 @@
                     <li class="unauth">@Html.ActionLink("Register", "Register", "Account")</li>
                     <li class="unauth">@Html.ActionLink("Login", "Login", "Account")</li>
                     <li class="auth">@Html.ActionLink("Logout", "Logout", "Account")</li>
+                    <li class="auth" ><a id="userName"></a></li>
                 </ul>
             </div>
         </div>
@@ -57,6 +58,9 @@
                 } else {
                     $(".admin").hide();
                     $(".user").hide();
+                }
+                if (sessionStorage.getItem("UserName") != null) {
+                    $("#userName").text('Hello   ' + sessionStorage.getItem("UserName"));
                 }
             }
         </script>

@@ -1,35 +1,41 @@
 ﻿<div>
-    <label>Введите email</label><br />
-    <input type="email" id="email" /> <br /><br />
-    <label>Введите пароль</label><br />
-    <input type="password" id="password" /><br /><br />
-    <label>Подтвердите пароль</label><br />
-    <input type="password" id="confirmpassword" /><br /><br />
-    <input type="submit" id="submit" value="Регистрация" />
+    <label></label>
+    <label>Введите email</label><br/>
+    <input type="email" id="email" required/> <br/><br/>
+    <label>Введите пароль</label><br/>
+    <input type="password" id="password" required/><br/><br/>
+    <label>Подтвердите пароль</label><br/>
+    <input type="password" id="confirmpassword" required/><br/><br/>
+    <input type="submit" id="submit" value="Регистрация"/>
 </div>
 @section scripts{
     <script type="text/javascript">
-    $(function () {
-        $('#submit').click(function (e) {
-            e.preventDefault();
-            var data = {
-                Email: $('#email').val(),
-                Password: $('#password').val(),
-                ConfirmPassword: $('#confirmpassword').val()
-            };
+        $(function() {
+            $('#submit').click(function(e) {
+                e.preventDefault();
+                if ($('#password').val() == $('#confirmpassword').val()) {
+                    var data = {
+                        firstName: 'default',
+                        lastName: 'default',
+                        password: $('#password').val(),
+                        login: $('#email').val()
+                    };
 
-            $.ajax({
-                type: 'POST',
-                url: 'http://localhost:9095/account/???',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify(data)
-            }).success(function (data) {
-                alert("Successful registration");
-                window.location.replace('http://localhost:60305/account/login');
-            }).fail(function (data) {
-                alert("В процесе регистрации возникла ошибка");
+                    $.ajax({
+                        type: 'POST',
+                        url: 'http://localhost:9095/api/accounts',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify(data)
+                    }).success(function(data) {
+                        alert("Successful registration");
+                        window.location.replace('http://localhost:60305/account/login');
+                    }).fail(function(data) {
+                        alert("В процесе регистрации возникла ошибка");
+                    });
+                } else {
+                    alert("pasword doesn't match");
+                }
             });
-        });
-    })
+        })
     </script>
 }

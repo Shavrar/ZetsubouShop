@@ -1,0 +1,169 @@
+group 'university'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url "https://repo.spring.io/libs-milestone"
+        }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
+        classpath("io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE")
+        classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1")
+        classpath("gradle.plugin.com.ewerk.gradle.plugins:querydsl-plugin:1.0.7")
+    }
+}
+
+apply plugin: 'war'
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: 'idea'
+
+apply plugin: "io.spring.dependency-management"
+apply plugin: "com.ewerk.gradle.plugins.querydsl"
+apply plugin: "jacoco"
+apply plugin: "org.sonarqube"
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://repo.spring.io/libs-milestone"
+    }
+    maven {
+        url "http://maven.apache.org"
+    }
+    maven {
+        url "https://repo.maven.apache.org/maven2"
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.host.url", "http://localhost:9000/"
+        property "sonar.projectName", "ESHOP(SERVER)"
+        property "sonar.projectKey", "org.sonarqube:eshop-server"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.sources", "src/main/java"
+        property "sonar.cpd.exclusions", ['**/models/**', '**/dto/**']
+    }
+}
+
+test {
+    ignoreFailures = true
+}
+
+springBoot {
+    executable = true
+}
+
+bootRepackage {
+    mainClass = 'com.eshop.SpringBootRestApplication'
+    withJarTask = jar
+}
+
+task pathingJar(type: Jar) {
+    dependsOn configurations.runtime
+    appendix = 'pathing'
+
+    doFirst {
+        manifest {
+            attributes "Class-Path": configurations.runtime.files.collect {
+                it.toURL().toString().replaceFirst('/file:/+/', '/')
+            }.join(' ')
+        }
+    }
+}
+
+bootRun {
+    dependsOn pathingJar
+    doFirst {
+        classpath = files("$buildDir/classes/main", "$buildDir/resources/main", pathingJar.archivePath)
+    }
+    systemProperties = System.properties
+}
+
+jar {
+    baseName = 'Recipes'
+}
+
+war {
+    baseName = 'rcp'
+}
+
+querydsl {
+    library = "com.querydsl:querydsl-apt:4.1.4"
+    jpa = true
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web:1.4.0.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa:1.4.0.RELEASE")
+    compile("org.apache.commons:commons-dbcp2:2.1.1")
+    compile("org.springframework.security.oauth:spring-security-oauth2:2.0.10.RELEASE")
+
+    compile group: 'com.microsoft.sqlserver', name: 'sqljdbc4', version: '4.0'
+    compile("com.google.guava:guava:19.0")
+
+    compile("org.apache.commons:commons-lang3:3.4")
+
+    compile("org.modelmapper:modelmapper:0.7.6")
+    compile("javax.jdo:jdo2-api:2.3-eb")
+
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("org.mockito:mockito-core:1.9.5")
+
+    //--- test
+    compile("org.springframework:spring-test:4.3.3.RELEASE")
+    testCompile("com.h2database:h2:1.4.192")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("com.jayway.restassured:rest-assured:2.9.0")
+    testCompile("org.assertj:assertj-core:3.5.2")
+    testCompile("junit:junit:4.12")
+
+    //--- generate API
+    compile("io.springfox:springfox-swagger2:2.5.0")
+    compile("io.springfox:springfox-swagger-ui:2.5.0")
+
+    //--- log
+    compile("org.apache.logging.log4j:log4j-api:2.6.2")
+    compile("org.apache.logging.log4j:log4j-core:2.6.2")
+    compile("org.apache.logging.log4j:log4j-jcl:2.6.2")
+
+    //--- spring-social facebook
+    compile "org.springframework.security:spring-security-config:4.1.1.RELEASE"
+    compile "org.springframework.security:spring-security-web:4.1.1.RELEASE"
+    compile "org.springframework.social:spring-social-config:1.1.4.RELEASE"
+    compile "org.springframework.social:spring-social-core:1.1.4.RELEASE"
+    compile "org.springframework.social:spring-social-security:1.1.4.RELEASE"
+    compile "org.springframework.social:spring-social-facebook:2.0.3.RELEASE"
+    compile "org.springframework.social:spring-social-facebook-web:2.0.3.RELEASE"
+
+    //--- mail
+    compile("com.sun.mail:javax.mail:1.5.5")
+    compile("org.springframework:spring-context-support:4.3.2.RELEASE")
+    compile("org.apache.velocity:velocity:1.7")
+    compile("org.apache.velocity:velocity-tools:2.0")
+
+    //--- spatial
+    compile("org.hibernate:hibernate-spatial:5.2.1.Final")
+
+    //--- thumbnails
+    compile("net.coobird:thumbnailator:0.4.8")
+
+    //--- querydsl
+    compile("com.querydsl:querydsl-jpa:4.1.4")
+    compile("com.querydsl:querydsl-apt:4.1.4")
+    compile("com.querydsl:querydsl-core:4.1.4")
+
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14.1'
+}

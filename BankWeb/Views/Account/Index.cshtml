@@ -1,1 +1,189 @@
-﻿
+﻿<div class="row special">
+    <div id="tableBlock"></div>
+    <div id="editBlock">
+        <p><b>Edit user</b></p>
+        <table>
+            <tr><td><input type="hidden" id="editId" /></td><td></td></tr>
+            <tr><td><label>First Name: </label></td><td><input type="text" id="editFirstName" /></td></tr>
+            <tr><td><label>Last Name: </label></td><td><input type="text" id="editLastName"/></td></tr>
+        </table>
+        <button id="editUser">Save</button>
+    </div>
+    <div id="createBlock">
+        <p><b>Add User</b></p>
+        <table>
+            <tr><td><label>Login: </label></td><td><input type="text" id="addLogin" /></td></tr>
+            <tr><td><label>First Name: </label></td><td><input type="text" id="addFirstName" /></td></tr>
+            <tr><td><label>Last Name: </label></td><td><input type="text" id="addLastName"/></td></tr>
+            <tr><td><label>Password: </label></td><td><input type="text" id="addPassword" /></td></tr>
+        </table>
+        <button id="addUser">Save</button>
+    </div>
+
+</div>
+@section scripts
+{
+    @Scripts.Render("~/bundles/auth")
+    <script type="text/javascript">
+        if (sessionStorage["Role"] != "ROLE_ADMIN") {
+            window.location.replace('http://localhost:60305');
+        }
+
+        $(document).ready(function () {
+
+            GetAllUsers();
+
+            $("#editUser").click(function (event) {
+                event.preventDefault();
+                EditUser();
+            });
+
+            $("#addUser").click(function (event) {
+                event.preventDefault();
+                AddUser();
+            });
+
+        });
+
+        function GetAllUsers() {
+
+            $("#createBlock").css('display', 'block');
+            $("#editBlock").css('display', 'none');
+            $.ajax({
+                url: 'http://localhost:9095/api/accounts/',
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    WriteResponse(data.content);
+                },
+                error: function () {
+                    alert("ahtung");
+                }
+            });
+        }
+
+        function AddUser() {
+
+            var user = {
+                login: $('#addLogin').val(),
+                firstName: $('#addFirstName').val(),
+                lastName: $('#addLastName').val(),
+                password: $('#addPassword').val()
+            };
+
+            $.ajax({
+                url: 'http://localhost:9095/api/accounts/',
+                type: 'POST',
+                data: JSON.stringify(user),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllUsers();
+                },
+                error: function () {
+                    alert("Creation failed");
+                }
+            });
+        }
+        function DeleteUser(id) {
+
+            $.ajax({
+                url: 'http://localhost:9095/api/accounts/' + id,
+                type: 'DELETE',
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllUsers();
+                },
+                error: function () {
+                    alert("Deletion failed");
+                }
+            });
+        }
+        function EditUser() {
+            var id = $('#editId').val();
+            var user = {
+                id: $('#editId').val(),
+                lastName: $('#editLastName').val(),
+                firstName: $('#editFirstName').val()
+            };
+            $.ajax({
+                url: 'http://localhost:9095/api/accounts/' + id,
+                type: 'PUT',
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                data: JSON.stringify(user),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllUsers();
+                },
+                error: function () {
+                    alert("Update failed");
+                }
+            });
+        }
+
+        function WriteResponse(users) {
+            var strResult = "<table><th>ID</th><th>Login</th><th>First Name</th><th>Last Name</th><th>User Role</th>";
+            $.each(users, function (index, user) {
+                strResult += "<tr><td>" + user.id + "</td><td> " + user.login + "</td><td>" +
+                    user.firstName + "</td><td>" + user.lastName + "</td><td>" + user.userRole +
+                    "</td><td><a id='editItem' data-item='" + user.id + "' onclick='EditItem(this);' >Edit</a></td>" +
+                    "<td><a id='delItem' data-item='" + user.id + "' onclick='DeleteItem(this);' >Delete</a></td></tr>";
+            });
+            strResult += "</table>";
+            $("#tableBlock").html(strResult);
+
+        }
+
+        function DeleteItem(el) {
+            var id = $(el).attr('data-item');
+            DeleteUser(id);
+        }
+
+        function EditItem (el) {
+            var id = $(el).attr('data-item');
+            GetUser(id);
+        }
+
+        function ShowUser(user) {
+            if (user != null) {
+                $("#createBlock").css('display', 'none');
+                $("#editBlock").css('display', 'block');
+                $("#editId").val(user.id);
+                $("#editLogin").val(user.login);
+                $("#editFirstName").val(user.firstName);
+                $("#editLastName").val(user.lastName);
+            }
+            else {
+                alert("not exists");
+            }
+        }
+
+        function GetUser(id) {
+            $.ajax({
+                url: 'http://localhost:9095/api/accounts/' + id,
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                type: 'GET',
+                dataType: 'json',
+                success: function (user) {
+                    ShowUser(user);
+                },
+                error: function () {
+                    alert("ahtung");
+                }
+            });
+        }
+    </script>
+}

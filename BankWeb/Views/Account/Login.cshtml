@@ -7,6 +7,7 @@
     <input type="submit" id="submitLogin" value="Логин" />
 </div>
 @section scripts{
+    
     <script type="text/javascript">
     $(function () {
         //...........................
@@ -15,14 +16,15 @@
             var token = btoa($('#emailLogin').val() + ':' + $('#passwordLogin').val());
             $.ajax({
                 type: 'GET',
-                url: 'http://localhost:9095/account/???',
+                url: 'http://localhost:9095/api/accounts/info',
                 beforeSend: function (xhr) {
-                    xhr.setRequestHeader("Authorization", token);
+                    console.log(token);
+                    xhr.setRequestHeader("Authorization", 'Basic '+token);
                 }
             }).success(function (data) {
                 sessionStorage.setItem("Authorization", token);
-                sessionStorage.setItem("Role", data.role);
-                sessionStorage.setItem("UserName", data.UserName);
+                sessionStorage.setItem("Role", data.userRole);
+                sessionStorage.setItem("UserName", data.firstName + '   ' + data.lastName);
                 window.location.replace('http://localhost:60305/');
             }).fail(function (data) {
                 alert('При логине возникла ошибка');

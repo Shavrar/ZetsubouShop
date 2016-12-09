@@ -1,1 +1,166 @@
-﻿
+﻿<div class="row special">
+    <div id="tableBlock"></div>
+    <div id="PayBlock">
+        <p><b>Make transaction</b>
+        </p>
+        <table>
+            <tr><td><input type="hidden" id="editSCN" /></td><td></td></tr>
+            <tr><td><label>Amount: </label></td><td><input type="text" id="editAmount"/></td></tr>
+            <tr><td><label>Reciver Card Number: </label></td><td><input type="text" id="editRCN"/></td></tr>
+            <tr><td><label>Your password for card: </label></td><td><input type="password" id="editPassword"/></td></tr>
+        </table>
+        <button id="makeTransaction">Go</button>
+    </div>
+    <div id="createBlock">
+        <p><b>Add Invoice</b></p>
+        <table>
+            <tr><td><label>Amount: </label></td><td><input type="text" id="addAmount" /></td></tr>
+            <tr><td><label>Card Number: </label></td><td><input type="text" id="addCardNumber" /></td></tr>
+            <tr><td><label>Password: </label></td><td><input type="password" id="addPassword" /></td></tr>
+        </table>
+        <button id="addInvoice">Save</button>
+    </div>
+
+</div>
+@section scripts
+{
+    @Scripts.Render("~/bundles/auth")
+    <script type="text/javascript">
+        if (sessionStorage["Role"] != "ROLE_USER") {
+            window.location.replace('http://localhost:60305');
+        }
+        var tokenKey = "tokenInfo";
+        $(document).ready(function () {
+
+            GetAllInvoices();
+
+            $("#makeTransaction").click(function (event) {
+                event.preventDefault();
+                MakeTransaction();
+            });
+
+            $("#addInvoice").click(function (event) {
+                event.preventDefault();
+                AddInvoice();
+            });
+
+        });
+
+        function GetAllInvoices() {
+
+            $("#createBlock").css('display', 'block');
+            $("#PayBlock").css('display', 'none');
+            $.ajax({
+                url: 'http://localhost:9095/api/invoices/',
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    WriteResponse(data);
+                },
+                error: function () {
+                    alert("ahtung");
+                }
+            });
+        }
+
+        function AddInvoice() {
+
+            var invoice = {
+                amount: $('#addAmount').val(),
+                cardNumber: $('#addCardNumber').val(),
+                password: $('#addPassword').val()
+            };
+
+            $.ajax({
+                url: 'http://localhost:9095/api/invoices/',
+                type: 'POST',
+                data: JSON.stringify(invoice),
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllInvoices();
+                },
+                error: function () {
+                    alert("Creation failed");
+                }
+            });
+        }
+        function DeleteInvoice(id) {
+
+            $.ajax({
+                url: 'http://localhost:9095/api/invoices/' + id,
+                type: 'DELETE',
+                beforeSend: function (xhr) {
+                    var token = sessionStorage.getItem("Authorization");
+                    xhr.setRequestHeader("Authorization", "Basic " + token);
+                },
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllInvoices();
+                },
+                error: function () {
+                    alert("Deletion failed");
+                }
+            });
+        }
+
+        function MakeTransaction() {
+           
+            var transaction = {
+                senderCardNumber: $('#editSCN').val(),
+                amount: $('#editAmount').val(),
+                reciverCardNumber: $('#editRCN').val(),
+                password: $('#editPassword').val()
+            };
+            $.ajax({
+                url: 'http://localhost:9095/api/transactions/',
+                type: 'POST',
+                data: JSON.stringify(transaction),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllInvoices();
+                },
+                error: function () {
+                    alert("Transaction failed");
+                }
+            });
+        }
+        function WriteResponse(invoices) {
+            var strResult = "<table><th>ID</th><th>Amount</th><th>Card Number</th><th>Expire Date</th>";
+            $.each(invoices, function (index, invoice) {
+                strResult += "<tr><td>" + invoice.id + "</td><td> " + invoice.amount + "</td><td>" +
+                    invoice.cardNumber + "</td><td>" + invoice.expireDate +
+                    "</td><td><a id='TransactionItem' data-item='" + invoice.cardNumber + "' onclick='TransactionItem(this);' >Make Transaction</a></td>" +
+                    "<td><a id='delItem' data-item='" + invoice.id + "' onclick='DeleteItem(this);' >Delete</a></td></tr>";
+            });
+            strResult += "</table>";
+            $("#tableBlock").html(strResult);
+
+        }
+
+        function DeleteItem(el) {
+            var id = $(el).attr('data-item');
+            DeleteInvoice(id);
+        }
+
+        function TransactionItem (el) {
+            var id = $(el).attr('data-item');
+            ShowTransaction(id);
+        }
+
+        function ShowTransaction(id) {
+                $("#editSCN").val(id);
+                $("#createBlock").css('display', 'none');
+                $("#PayBlock").css('display', 'block');
+        }
+
+
+    </script>
+}
